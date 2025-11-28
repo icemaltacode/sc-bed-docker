@@ -1,0 +1,56 @@
+FROM php:8.2-fpm
+
+# Install OS deps and PHP extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libzip-dev \
+        zip \
+        git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" gd mysqli pdo pdo_mysql zip \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# PHP overrides
+RUN set -eux; \
+    { \
+      echo "[PHP]"; \
+      echo "output_buffering = On"; \
+    } > /usr/local/etc/php/conf.d/local.ini
+
+# Xdebug config
+RUN set -eux; \
+    { \
+      echo "[Xdebug]"; \
+      echo "zend_extension=xdebug.so"; \
+      echo "xdebug.mode=develop,coverage,debug,gcstats,profile,trace"; \
+      echo "xdebug.client_port=9003"; \
+      echo "xdebug.client_host=host.docker.internal"; \
+      echo "xdebug.idekey=VSCODE"; \
+    } > /usr/local/etc/php/conf.d/xdebug.ini
+
+# Run script
+COPY <<'RUNSH' /opt/run.sh
+#!/bin/sh
+set -e
+
+cd /var/www/html
+
+if [ -f composer.json ]; then
+  echo "[run.sh] composer.json found – running composer install"
+  composer install
+fi
+
+echo "[run.sh] starting php-fpm..."
+php-fpm -F
+RUNSH
+
+RUN chmod +x /opt/run.sh
+
+CMD ["/opt/run.sh"]
