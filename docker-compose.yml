@@ -1,0 +1,45 @@
+services:
+  web:
+    image: ghcr.io/icemaltacode/sc-bed-nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+
+  php:
+    image: ghcr.io/icemaltacode/sc-bed-php:latest
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./support/db.sql:/docker-entrypoint-initdb.d/db.sql
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin" , "-u", "root", "-proot", "ping", "-h", "localhost"]
+      start_period: 10s
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  print-status:
+    image: busybox
+    command: "echo '---\nSERVER RUNNING AT http://localhost:8000. USE CTRL+C TO TERMINATE.\n---'"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      php:
+        condition: service_started
+      web:
+        condition: service_started
+
+volumes:
+  db_data:
