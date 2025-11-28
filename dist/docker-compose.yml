@@ -5,6 +5,8 @@ services:
       - "8000:80"
     volumes:
       - ./:/var/www/html
+    depends_on:
+      - php
 
   php:
     image: ghcr.io/icemaltacode/sc-bed-php:latest
@@ -43,3 +45,4 @@ services:
 
 volumes:
   db_data:
+

@@ -27,32 +27,32 @@ done
 
 # ASCII art banner
 echo
-echo -e "${GREEN}  ___ ___ ___ ${RESET}"
-echo -e "${GREEN} |_ _/ __| __|${RESET}"
-echo -e "${GREEN}  | | (__| _| ${RESET}"
-echo -e "${GREEN} |___\___|___|${RESET}"
-echo -e "${YELLOW}    CAMPUS${RESET}"
+printf '%b\n' "${GREEN}  ___ ___ ___ ${RESET}"
+printf '%b\n' "${GREEN} |_ _/ __| __|${RESET}"
+printf '%b\n' "${GREEN}  | | (__| _| ${RESET}"
+printf '%b\n' "${GREEN} |___\___|___|${RESET}"
+printf '%b\n' "${YELLOW}    CAMPUS${RESET}"
 echo
 
 if [ $RESET_DB -eq 1 ]; then
-  echo -e "${YELLOW}[info] Resetting database (docker compose down -v)...${RESET}"
+  printf '%b\n' "${YELLOW}[info] Resetting database (docker compose down -v)...${RESET}"
   docker compose down -v || true
 fi
 
 if [ $VERBOSE -eq 1 ]; then
-  echo -e "${YELLOW}[verbose] Project directory: $(pwd)${RESET}"
-  echo -e "${YELLOW}[verbose] Docker compose config:${RESET}"
+  printf '%b\n' "${YELLOW}[verbose] Project directory: $(pwd)${RESET}"
+  printf '%b\n' "${YELLOW}[verbose] Docker compose config:${RESET}"
   docker compose config
   echo
 fi
 
-echo -e "${GREEN}Starting Server...${RESET}"
+printf '%b\n' "${GREEN}Starting Server...${RESET}"
 docker compose up
 
-echo -e "${YELLOW}Destroying resources...${RESET}"
+printf '%b\n' "${YELLOW}Destroying resources...${RESET}"
 docker compose down
 
-echo -e "${GREEN}Resources destroyed${RESET}"
+printf '%b\n' "${GREEN}Resources destroyed${RESET}"
 }
 
 goto "$@"
@@ -111,3 +111,4 @@ echo Press any key to exit...
 pause >nul
 exit
 }
+
