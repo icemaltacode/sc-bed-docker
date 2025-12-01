@@ -1,7 +1,7 @@
 @echo off
 
 goto(){
-# ===== macOS / Linux section =====
+# ===== macOS / Linux section ======
 
 # Exit on error
 set -e
