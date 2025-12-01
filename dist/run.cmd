@@ -63,41 +63,51 @@ exit
 REM ===== Windows section (CMD) =====
 
 REM ANSI colours (Windows 10+ / Windows Terminal)
-set "GREEN=m"
-set "YELLOW=m"
-set "RED=m"
-set "RESET=m"
+REM The funny-looking char before [32m is a real ESC (ASCII 27).
+set "GREEN=[32m"
+set "YELLOW=[33m"
+set "RED=[31m"
+set "RESET=[0m"
 
 set RESET_DB=0
 set VERBOSE=0
 
-REM Parse arguments (up to a few for simplicity)
-for %%A in (%*) do (
-  if "%%A"=="reset-db" set RESET_DB=1
-  if "%%A"=="--reset-db" set RESET_DB=1
-  if "%%A"=="--verbose" set VERBOSE=1
-  if "%%A"=="-v" set VERBOSE=1
-)
+REM ---- Parse up to two arguments (no loops, no parentheses) ----
+if "%1"=="reset-db"   set RESET_DB=1
+if "%1"=="--reset-db" set RESET_DB=1
 
-echo .
+if "%1"=="--verbose"  set VERBOSE=1
+if "%1"=="-v"         set VERBOSE=1
+if "%2"=="--verbose"  set VERBOSE=1
+if "%2"=="-v"         set VERBOSE=1
+
+echo.
 echo %GREEN%  ___ ___ ___ %RESET%
-echo %GREEN% |_ _/ __| __|%RESET%
-echo %GREEN%  | | (__| _| %RESET%
-echo %GREEN% |___\___|___|%RESET%
+echo %GREEN% ^|_ _/ __^| __^|%RESET%
+echo %GREEN%  ^| ^| (__^| _^| %RESET%
+echo %GREEN% ^|___\___^|___^|%RESET%
 echo %YELLOW%    CAMPUS%RESET%
-echo .
+echo.
 
-if "%RESET_DB%"=="1" (
-  echo %YELLOW%[info] Resetting database (docker compose down -v)...%RESET%
-  docker compose down -v
-)
+REM ---- Handle reset-db without parentheses ----
+if "%RESET_DB%"=="1" goto _reset_db
+goto _after_reset_db
 
-if "%VERBOSE%"=="1" (
-  echo %YELLOW%[verbose] Project directory: %CD%%RESET%
-  echo %YELLOW%[verbose] Docker compose config:%RESET%
-  docker compose config
-  echo.
-)
+:_reset_db
+echo %YELLOW%[info] Resetting database (docker compose down -v)...%RESET%
+docker compose down -v
+:_after_reset_db
+
+REM ---- Handle verbose without parentheses ----
+if "%VERBOSE%"=="1" goto _verbose
+goto _after_verbose
+
+:_verbose
+echo %YELLOW%[verbose] Project directory: %CD%%RESET%
+echo %YELLOW%[verbose] Docker compose config:%RESET%
+docker compose config
+echo.
+:_after_verbose
 
 echo %GREEN%Starting Server...%RESET%
 docker compose up
@@ -111,4 +121,3 @@ echo Press any key to exit...
 pause >nul
 exit
 }
-
